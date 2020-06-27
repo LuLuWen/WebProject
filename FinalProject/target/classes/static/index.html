@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+<title>Insert title here</title>
+
+<script
+  src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>	
+
+</head>
+<body>
+	<div id="main">
+	<br>
+	<button type="button" style="float:right" class="btn  btn-primary" name="list"  onclick="listAllVenue()">我的口袋名單</button>
+	<form action="/foursquareApiList" method="get">
+	地點關鍵字:
+	<input type="text" name="zone" id="zone">
+	
+	類別關鍵字:
+	<select name="YourSection" id="YourSection">
+		<option value="food">食物</option>
+		<option value="drinks">飲料店</option>
+		<option value="coffee">咖啡館</option>
+		<option value="shops">商店</option>
+		<option value="arts">藝術展覽</option>
+		<option value="outdoors">戶外活動</option>
+	</select>
+	
+	<button type="button" value="" name="" onclick="httptrace()">Explore</button>	
+	
+	<!-- goto login, if you allow, you will exchange a code to get a token -->
+	</form>
+	
+	
+	<form action="/login" method="get">
+	<button type="submit" value="user/self/venuelikes" name="api">User's venuelikes</button>	
+	
+	<!-- goto login, if you allow, you will exchange a code to get a token -->
+	</form>
+	</div>
+	
+	
+<script>
+var data = [];
+let dataJSON = {};
+dataJSON["venueId"] = "";
+dataJSON["venueName"] = "";
+dataJSON["summary"] = "";
+dataJSON["address"] = "";
+dataJSON["city"] = "";
+var count = 0;
+var jsonStr = '{"theTeam":[{"venueId":"1","venueName":"pending","summary":"pending","address":"pending","city":"pending"}]}';
+var obj = JSON.parse(jsonStr);
+function httptrace(){
+	$.ajax({
+        type:"GET",                    
+        url: "/foursquareApiList", 
+        data: {zone: $("#zone").val() , YourSection: $("#YourSection").val()},
+        contentType: "application/json;charset=utf-8",
+        success : function(result){
+        	console.log(result);
+        	console.log(result.response.groups[0].items.length);
+        	console.log(result.response.groups[0].items[0].reasons.items[0].summary);
+        	console.log(result.response.groups[0].items[0].venue.id);
+        	console.log(result.response.groups[0].items[0].venue.name);
+        	console.log(result.response.groups[0].items[0].venue.location.address);
+        	console.log(result.response.groups[0].items[0].venue.location.city);
+        	document.getElementById("body1").innerHTML = '';
+        	//count = result.response.groups[0].items.length;
+        	if(count!=0){
+        		var jsonStr2 = '{"theTeam":[{"venueId":"1","venueName":"pending","summary":"pending","address":"pending","city":"pending"}]}';
+        		var obj2 = JSON.parse(jsonStr2);
+        	}
+        	
+        	for(m = 0; m < result.response.groups[0].items.length; m++){
+        		document.getElementById("body1").innerHTML += '<ul><li>' + result.response.groups[0].items[m].venue.name + '  <button id="'+ result.response.groups[0].items[m].venue.id +'" onclick="addChecklist(id)"  name="add" value="'+ result.response.groups[0].items[m].venue.name +'">加入清單</button></ul></li> ';
+    			if(count==0)
+    				obj['theTeam'].push({"venueId":result.response.groups[0].items[m].venue.id,"venueName":result.response.groups[0].items[m].venue.name,"summary":result.response.groups[0].items[m].reasons.items[0].summary,"address":result.response.groups[0].items[m].venue.location.address,"city":result.response.groups[0].items[m].venue.location.city});
+    			else{
+    				obj2['theTeam'].push({"venueId":result.response.groups[0].items[m].venue.id,"venueName":result.response.groups[0].items[m].venue.name,"summary":result.response.groups[0].items[m].reasons.items[0].summary,"address":result.response.groups[0].items[m].venue.location.address,"city":result.response.groups[0].items[m].venue.location.city});
+    				obj=obj2;
+    			}
+    			//jsonStr = JSON.stringify(obj);
+    			
+    			//dataJSON["venueId"] = result.response.groups[0].items[m].venue.id;
+        		//dataJSON["venueName"] = result.response.groups[0].items[m].venue.name;
+        		//dataJSON["summary"] = result.response.groups[0].items[m].reasons.items[0].summary;
+        		//dataJSON["address"] = result.response.groups[0].items[m].venue.location.address;
+        		//dataJSON["city"] = result.response.groups[0].items[m].venue.location.city;
+        		//console.log(dataJSON);
+        		//data[m]=dataJSON;
+        		//console.log(data[m]["venueName"]);
+        		//if(m==2){
+        		//	console.log(data[0]["venueName"]);
+        		//	console.log(data[1]["venueName"]);
+        		//}
+	
+        	}
+        	if(result.response.groups[0].items.length != 30){
+        		for(var l=result.response.groups[0].items.length ; l <= 30 ; l++){
+        			obj2['theTeam'].push({"venueId":"null","venueName":"null","summary":"null","address":"null","city":"null"});
+    				obj=obj2;
+        		}
+        	}
+        	count++;
+        	console.log("count: " + count);
+        	console.log(obj);
+        	console.log(jsonStr);
+        	//for(m=0;m<count;m++)
+        		//console.log(data[m]["venueName"]);
+        },
+    	//<button id="'+ result[m].id +'" onclick="deleteMember(id)" class="btn  btn-secondary delete" name="delete" value="'+ result[m].id +'">刪除</button> 
+    	//<button id="'+ result[m].id +'" onclick="editMember(id)" class="btn  btn-secondary edit" name="edit" value="'+ result[m].id +'">修改</button>
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+        
+	});
+}
+function addChecklist(id){
+	//console.log("After Click: "+data[1]["venueName"]);
+	console.log(id);
+	//console.log(obj.theTeam[1].venueId);
+	var result = {};
+	if(obj.theTeam[1].venueId == id){
+    		result["venueId"] = obj.theTeam[1].venueId;
+			result["venueName"] = obj.theTeam[1].venueName;
+			result["summary"] =  obj.theTeam[1].summary;
+			result["address"] =  obj.theTeam[1].address;
+			result["city"] =  obj.theTeam[1].city;
+			console.log(result);
+	}
+	if(obj.theTeam[2].venueId == id){
+		console.log(2);
+		result["venueId"] = obj.theTeam[2].venueId;
+		result["venueName"] = obj.theTeam[2].venueName;
+		result["summary"] =  obj.theTeam[2].summary;
+		result["address"] =  obj.theTeam[2].address;
+		result["city"] =  obj.theTeam[2].city;
+		console.log(result);
+	}
+	if(obj.theTeam[3].venueId == id){
+		result["venueId"] = obj.theTeam[3].venueId;
+		result["venueName"] = obj.theTeam[3].venueName;
+		result["summary"] =  obj.theTeam[3].summary;
+		result["address"] =  obj.theTeam[3].address;
+		result["city"] =  obj.theTeam[3].city;
+		console.log(result);
+	}
+	if(obj.theTeam[4].venueId == id){
+		result["venueId"] = obj.theTeam[4].venueId;
+		result["venueName"] = obj.theTeam[4].venueName;
+		result["summary"] =  obj.theTeam[4].summary;
+		result["address"] =  obj.theTeam[4].address;
+		result["city"] =  obj.theTeam[4].city;
+		console.log(result);
+}
+	if(obj.theTeam[5].venueId == id){
+		result["venueId"] = obj.theTeam[5].venueId;
+		result["venueName"] = obj.theTeam[5].venueName;
+		result["summary"] =  obj.theTeam[5].summary;
+		result["address"] =  obj.theTeam[5].address;
+		result["city"] =  obj.theTeam[5].city;
+		console.log(result);
+}
+	if(obj.theTeam[6].venueId == id){
+		result["venueId"] = obj.theTeam[6].venueId;
+		result["venueName"] = obj.theTeam[6].venueName;
+		result["summary"] =  obj.theTeam[6].summary;
+		result["address"] =  obj.theTeam[6].address;
+		result["city"] =  obj.theTeam[6].city;
+		console.log(result);
+}
+	if(obj.theTeam[7].venueId == id){
+		result["venueId"] = obj.theTeam[7].venueId;
+		result["venueName"] = obj.theTeam[7].venueName;
+		result["summary"] =  obj.theTeam[7].summary;
+		result["address"] =  obj.theTeam[7].address;
+		result["city"] =  obj.theTeam[7].city;
+		console.log(result);
+}
+	if(obj.theTeam[8].venueId == id){
+		result["venueId"] = obj.theTeam[8].venueId;
+		result["venueName"] = obj.theTeam[8].venueName;
+		result["summary"] =  obj.theTeam[8].summary;
+		result["address"] =  obj.theTeam[8].address;
+		result["city"] =  obj.theTeam[8].city;
+		console.log(result);
+}
+	if(obj.theTeam[9].venueId == id){
+		result["venueId"] = obj.theTeam[9].venueId;
+		result["venueName"] = obj.theTeam[9].venueName;
+		result["summary"] =  obj.theTeam[9].summary;
+		result["address"] =  obj.theTeam[9].address;
+		result["city"] =  obj.theTeam[9].city;
+		console.log(result);
+}
+	if(obj.theTeam[10].venueId == id){
+		result["venueId"] = obj.theTeam[10].venueId;
+		result["venueName"] = obj.theTeam[10].venueName;
+		result["summary"] =  obj.theTeam[10].summary;
+		result["address"] =  obj.theTeam[10].address;
+		result["city"] =  obj.theTeam[10].city;
+		console.log(result);
+}
+	if(obj.theTeam[11].venueId == id){
+		result["venueId"] = obj.theTeam[11].venueId;
+		result["venueName"] = obj.theTeam[11].venueName;
+		result["summary"] =  obj.theTeam[11].summary;
+		result["address"] =  obj.theTeam[11].address;
+		result["city"] =  obj.theTeam[11].city;
+		console.log(result);
+}
+	if(obj.theTeam[12].venueId == id){
+		result["venueId"] = obj.theTeam[12].venueId;
+		result["venueName"] = obj.theTeam[12].venueName;
+		result["summary"] =  obj.theTeam[12].summary;
+		result["address"] =  obj.theTeam[12].address;
+		result["city"] =  obj.theTeam[12].city;
+		console.log(result);
+}
+	if(obj.theTeam[13].venueId == id){
+		result["venueId"] = obj.theTeam[13].venueId;
+		result["venueName"] = obj.theTeam[13].venueName;
+		result["summary"] =  obj.theTeam[13].summary;
+		result["address"] =  obj.theTeam[13].address;
+		result["city"] =  obj.theTeam[13].city;
+		console.log(result);
+}
+	if(obj.theTeam[14].venueId == id){
+		result["venueId"] = obj.theTeam[14].venueId;
+		result["venueName"] = obj.theTeam[14].venueName;
+		result["summary"] =  obj.theTeam[14].summary;
+		result["address"] =  obj.theTeam[14].address;
+		result["city"] =  obj.theTeam[14].city;
+		console.log(result);
+}
+	if(obj.theTeam[15].venueId == id){
+		result["venueId"] = obj.theTeam[15].venueId;
+		result["venueName"] = obj.theTeam[15].venueName;
+		result["summary"] =  obj.theTeam[15].summary;
+		result["address"] =  obj.theTeam[15].address;
+		result["city"] =  obj.theTeam[15].city;
+		console.log(result);
+}
+	if(obj.theTeam[16].venueId == id){
+		result["venueId"] = obj.theTeam[16].venueId;
+		result["venueName"] = obj.theTeam[16].venueName;
+		result["summary"] =  obj.theTeam[16].summary;
+		result["address"] =  obj.theTeam[16].address;
+		result["city"] =  obj.theTeam[16].city;
+		console.log(result);
+}
+	if(obj.theTeam[17].venueId == id){
+		result["venueId"] = obj.theTeam[17].venueId;
+		result["venueName"] = obj.theTeam[17].venueName;
+		result["summary"] =  obj.theTeam[17].summary;
+		result["address"] =  obj.theTeam[17].address;
+		result["city"] =  obj.theTeam[17].city;
+		console.log(result);
+}
+	if(obj.theTeam[18].venueId == id){
+		result["venueId"] = obj.theTeam[18].venueId;
+		result["venueName"] = obj.theTeam[18].venueName;
+		result["summary"] =  obj.theTeam[18].summary;
+		result["address"] =  obj.theTeam[18].address;
+		result["city"] =  obj.theTeam[18].city;
+		console.log(result);
+}
+	if(obj.theTeam[19].venueId == id){
+		result["venueId"] = obj.theTeam[19].venueId;
+		result["venueName"] = obj.theTeam[19].venueName;
+		result["summary"] =  obj.theTeam[19].summary;
+		result["address"] =  obj.theTeam[19].address;
+		result["city"] =  obj.theTeam[19].city;
+		console.log(result);
+}
+	if(obj.theTeam[20].venueId == id){
+		result["venueId"] = obj.theTeam[20].venueId;
+		result["venueName"] = obj.theTeam[20].venueName;
+		result["summary"] =  obj.theTeam[20].summary;
+		result["address"] =  obj.theTeam[20].address;
+		result["city"] =  obj.theTeam[20].city;
+		console.log(result);
+}
+	if(obj.theTeam[21].venueId == id){
+		result["venueId"] = obj.theTeam[21].venueId;
+		result["venueName"] = obj.theTeam[21].venueName;
+		result["summary"] =  obj.theTeam[21].summary;
+		result["address"] =  obj.theTeam[21].address;
+		result["city"] =  obj.theTeam[21].city;
+		console.log(result);
+}
+	if(obj.theTeam[22].venueId == id){
+		result["venueId"] = obj.theTeam[22].venueId;
+		result["venueName"] = obj.theTeam[22].venueName;
+		result["summary"] =  obj.theTeam[22].summary;
+		result["address"] =  obj.theTeam[22].address;
+		result["city"] =  obj.theTeam[22].city;
+		console.log(result);
+}
+	if(obj.theTeam[23].venueId == id){
+		result["venueId"] = obj.theTeam[23].venueId;
+		result["venueName"] = obj.theTeam[23].venueName;
+		result["summary"] =  obj.theTeam[23].summary;
+		result["address"] =  obj.theTeam[23].address;
+		result["city"] =  obj.theTeam[23].city;
+		console.log(result);
+}
+	if(obj.theTeam[24].venueId == id){
+		result["venueId"] = obj.theTeam[24].venueId;
+		result["venueName"] = obj.theTeam[24].venueName;
+		result["summary"] =  obj.theTeam[24].summary;
+		result["address"] =  obj.theTeam[24].address;
+		result["city"] =  obj.theTeam[24].city;
+		console.log(result);
+}
+	if(obj.theTeam[25].venueId == id){
+		result["venueId"] = obj.theTeam[25].venueId;
+		result["venueName"] = obj.theTeam[25].venueName;
+		result["summary"] =  obj.theTeam[25].summary;
+		result["address"] =  obj.theTeam[25].address;
+		result["city"] =  obj.theTeam[25].city;
+		console.log(result);
+}
+	if(obj.theTeam[26].venueId == id){
+		result["venueId"] = obj.theTeam[26].venueId;
+		result["venueName"] = obj.theTeam[26].venueName;
+		result["summary"] =  obj.theTeam[26].summary;
+		result["address"] =  obj.theTeam[26].address;
+		result["city"] =  obj.theTeam[26].city;
+		console.log(result);
+}
+	if(obj.theTeam[27].venueId == id){
+		result["venueId"] = obj.theTeam[27].venueId;
+		result["venueName"] = obj.theTeam[27].venueName;
+		result["summary"] =  obj.theTeam[27].summary;
+		result["address"] =  obj.theTeam[27].address;
+		result["city"] =  obj.theTeam[27].city;
+		console.log(result);
+}
+	if(obj.theTeam[28].venueId == id){
+		result["venueId"] = obj.theTeam[28].venueId;
+		result["venueName"] = obj.theTeam[28].venueName;
+		result["summary"] =  obj.theTeam[28].summary;
+		result["address"] =  obj.theTeam[28].address;
+		result["city"] =  obj.theTeam[28].city;
+		console.log(result);
+}
+	if(obj.theTeam[29].venueId == id){
+		result["venueId"] = obj.theTeam[29].venueId;
+		result["venueName"] = obj.theTeam[29].venueName;
+		result["summary"] =  obj.theTeam[29].summary;
+		result["address"] =  obj.theTeam[29].address;
+		result["city"] =  obj.theTeam[29].city;
+		console.log(result);
+}
+	if(obj.theTeam[30].venueId == id){
+		result["venueId"] = obj.theTeam[30].venueId;
+		result["venueName"] = obj.theTeam[30].venueName;
+		result["summary"] =  obj.theTeam[30].summary;
+		result["address"] =  obj.theTeam[30].address;
+		result["city"] =  obj.theTeam[30].city;
+		console.log(result);
+}
+	$.ajax({
+        type:"POST",                    
+        url: "/addToChecklist",        
+        data: JSON.stringify(result),          
+        //dataType: "json",
+        contentType:"application/json;charset=UTF-8",
+        headers: {
+ 			Accept: "application/json",
+			},
+        success : function(result){
+        	window.alert("新增成功!!!");
+            document.getElementById("body1").innerHTML = "";
+            //console.log(dataJSON);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+        	window.alert("操作失敗!!!");
+            console.log(xhr.status);
+            console.log(thrownError);
+            console.log(dataJSON);
+        }
+   });
+}
+function deleteVenue(id){
+	$.ajax({
+             type:"DELETE",                    
+             url: "/delete/" + id ,        
+             //data: {id : $(this).attr("value")},	              
+             //Ajax成功後執行的function，response為回傳的值
+             success : function(result){
+                 //在id=ajaxResponse的fieldset中顯示Ajax的回傳值
+                 window.alert("刪除成功!!!");
+                 document.getElementById("body1").innerHTML = "";
+            	       
+             }	
+	});
+}
+function listAllVenue(){
+	$.ajax({
+        type:"GET",                    
+        url: "/findAllCheckLists",        	              
+        success : function(result){
+        	//console.log(result.length);
+        	
+        	document.getElementById("body1").innerHTML = "";
+        	document.getElementById("body1").innerHTML += '<table border ="1" class="table table-striped"><thead class="thead-dark"><tr><th scope="col">id</th><th scope="col">email</th><th scope="col">cellphone</th><th scope="col">password</th><th scope="col">address</th></tr></thead></table>';
+    		for(var m = 0; m < result.length; m++)			
+    		{	
+    			if(result[m].venueName != "")
+ 	    			document.getElementById("body1").innerHTML += '<table border ="1" class="table table-striped"><tbody class="table-striped"><tr><th scope="row">'+ result[m].venueId + '</th><td>' + result[m].venueName + '</td><td>' + result[m].summary + '</td><td>' + result[m].address + '</td><td>' + result[m].city + '</td></tr></tbody></table><button id="'+ result[m].id +'" onclick="deleteMember(id)" class="btn  btn-secondary delete" name="delete" value="'+ result[m].id +'">刪除</button> <button id="'+ result[m].id +'" onclick="editMember(id)" class="btn  btn-secondary edit" name="edit" value="'+ result[m].id +'">修改</button></br></br>';
+    			else
+					continue;    		
+    		}
+    	}	
+	});
+}
+</script>
+<div id = "body1"></div>
+</body>
+</html>
